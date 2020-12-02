@@ -23,14 +23,10 @@ inline auto setup_logger() -> void {
 }
 
 auto main() -> int {
-#if CURRENT_PLATFORM != PLATFORM_PSP
 	Platform::initPlatform("headless");
-#else
-	Platform::initPlatform();
-#endif
 	setup_logger();
 
-	Server* srv = new Server('K' * 'O' + 'F');
+	auto srv = std::make_unique<Server>('K' * 'O' + 'F');
 	while (srv->isRunning()) {
 		srv->listen();
 

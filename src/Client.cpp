@@ -1,19 +1,17 @@
 #include "Client.h"
+#include "protocol/Protocol.h"
 #include <zlib/zlib.h>
 
-Client::Client(Network::Connection* con) : conn(con), safe_conn(*con) {
+Client::Client(Network::Connection* con) : safe_conn(*con) {
+	conn = std::unique_ptr<Network::Connection>{ con };
 	connected = true;
-	compression = false;
+	compression = true;
 }
 
 Client::~Client() {
-	safe_conn->Close();
-
 #ifndef SINGLE_THREADED
 	thr.join();
 #endif
-
-	delete conn;
 }
 
 auto Client::receivePacket() -> bool {
@@ -126,6 +124,7 @@ auto Client::sendPacket() -> void {
 	}
 }
 
+#include <iostream>
 auto Client::handlePackets() -> void {
 
 	size_t len = receivedQueue->size();
@@ -133,10 +132,43 @@ auto Client::handlePackets() -> void {
 		auto packet = receivedQueue->front();
 		receivedQueue->pop();
 
-		//Validate ID
+		switch (static_cast<cbPacketName>(packet->ID)) {
+		case cbPacketName::Disconnect: {
+			Utilities::app_Logger->debug("Client Sent Disconnect!");
+			connected = false;
 
-		//TODO: HANDLE
+			break;
+		}
 
+		case cbPacketName::Handshake: {
+			auto data = decodeSbHandshake(packet);
+
+			Utilities::app_Logger->trace("User: "  + data.username + "is trying to join!");
+			Utilities::app_Logger->trace("PROTOCOL ID: " + std::to_string(data.protocolID));
+
+			if (data.protocolID != PROTOCOL_VERSION) {
+				Utilities::app_Logger->warn("Outdated Protocol ID!");
+				connected = false;
+
+				auto p = makeCbDisconnect("VERSION TOO OLD!");
+				addPacket(p.release());
+				sendPacket();
+			}
+			else {
+				auto p = makeCbHandshake({ PROTOCOL_VERSION, SERVER_VERSION_MAJOR, SERVER_VERSION_MINOR, SERVER_VERSION_REVISION });
+				addPacket(p.release());
+				sendPacket();
+			}
+			
+			break;
+		}
+
+		default: {
+			Utilities::app_Logger->warn("UNKNOWN PACKET: " + std::to_string(packet->ID));
+
+			break;
+		}
+		}
 
 		delete packet;
 	}
@@ -154,7 +186,7 @@ void Client::start() {
 auto Client::run(Client* self) -> void {
 
 	//Loop
-	while (self->safe_conn->isAlive()) {
+	while (self->safe_conn->isAlive() && self->connected) {
 
 		//Receive up to 50 packets at once
 		int packetCounter = 0;

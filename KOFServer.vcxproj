@@ -59,6 +59,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="src\Client.h" />
+    <ClInclude Include="src\protocol\ClientProtocol.h" />
+    <ClInclude Include="src\protocol\Protocol.h" />
+    <ClInclude Include="src\protocol\ServerProtocol.h" />
     <ClInclude Include="src\Server.h" />
     <ClInclude Include="src\Types.h" />
     <ClInclude Include="src\util\ThreadSafe.h" />

@@ -10,6 +10,7 @@
 #include <Network/NetworkDriver.h>
 #include "Types.h"
 #include <vector>
+#include <memory>
 //#include "world/World.h"
 
 using namespace Stardust;
@@ -20,8 +21,8 @@ using namespace Stardust;
  * On new connection, it spawns a Client and splits it off into a thread.
  */
 class Server : public NonCopyable, NonMovable {
-	Network::ServerSocket* socket;
-	std::vector<Client*> clients;
+	std::unique_ptr<Network::ServerSocket> socket;
+	std::vector<std::shared_ptr<Client>> clients;
 	bool running;
 
 	//World* world;

@@ -14,7 +14,7 @@
 using namespace Stardust;
 
 class Client {
-	Network::Connection* conn;
+	std::unique_ptr<Network::Connection> conn;
 	ThreadSafe<Network::Connection> safe_conn;
 	bool connected;
 	bool compression;

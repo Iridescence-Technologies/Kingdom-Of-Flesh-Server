@@ -27,6 +27,15 @@
     <ClInclude Include="src\util\ThreadSafe.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\protocol\Protocol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\protocol\ClientProtocol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\protocol\ServerProtocol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Main.cpp">

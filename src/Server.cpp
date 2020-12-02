@@ -4,44 +4,52 @@ Server::Server(u16 port) {
 	Network::g_NetworkDriver.Init();
 
 	running = true;
-	socket = new Network::ServerSocket(port);
+	socket = std::make_unique<Network::ServerSocket>(port);
 
 	//Setup world
 }
 
 Server::~Server() {
 	socket->Close();
-	delete socket;
 	Network::g_NetworkDriver.Cleanup();
 }
 
 void Server::collectDead() {
 	for (auto i = 0; i < clients.size(); i++) {
 		if (clients[i]->isClosed()) {
-			delete clients[i];
 			clients[i] = nullptr;
 		}
 	}
 
-	std::vector<Client*> temp;
+	std::vector<std::shared_ptr<Client>> temp;
 	for (auto i = 0; i < clients.size(); i++) {
 		if (clients[i] != nullptr) {
-			temp.push_back(clients[i]);
+			temp.push_back(std::move(clients[i]));
 		}
 	}
 
-	clients = temp;
+	clients.clear();
+	for (auto& cl : temp) {
+		clients.push_back(std::move(cl));
+	}
 }
 
+std::shared_ptr<Client> cl;
 void Server::listen() {
+	//Wait for new connection
 	auto conn = socket->ListenState();
 
-	if (conn != nullptr) {
-		auto cl = new Client(conn);
-		clients.push_back(cl);
+	//Create new ptr
+	auto cl = std::make_shared<Client>(conn);
 
-		cl->start();
-	}
+	//Start the thread
+	cl->start();
 
+	//Move the ptr to the list
+	clients.push_back(std::move(cl));
+	
+	//cl is nullptr
+
+	//Garbage collect
 	collectDead();
 }
