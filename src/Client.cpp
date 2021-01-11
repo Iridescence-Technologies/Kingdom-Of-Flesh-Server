@@ -143,7 +143,7 @@ auto Client::handlePackets() -> void {
 		case cbPacketName::Handshake: {
 			auto data = decodeSbHandshake(packet);
 
-			Utilities::app_Logger->trace("User: "  + data.username + "is trying to join!");
+			Utilities::app_Logger->trace("User: "  + data.username + " is trying to join!");
 			Utilities::app_Logger->trace("PROTOCOL ID: " + std::to_string(data.protocolID));
 
 			if (data.protocolID != PROTOCOL_VERSION) {
